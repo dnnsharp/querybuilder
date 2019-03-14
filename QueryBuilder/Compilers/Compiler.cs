@@ -1,3 +1,4 @@
+using SqlKata.Values;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -876,6 +877,15 @@ namespace SqlKata.Compilers
             if (parameter is UnsafeLiteral literal)
             {
                 return literal.Value;
+            }
+
+            if (parameter is AbstractFunctionValue) {
+                if (parameter is NullifValue) {
+                    var nullifValue = parameter as NullifValue;
+                    ctx.Bindings.Add(nullifValue.Expression);
+                    ctx.Bindings.Add(nullifValue.Condition);
+                    return "NULLIF(?, ?)";
+                }
             }
 
             // if we face a variable we have to lookup the variable from the predefined variables
