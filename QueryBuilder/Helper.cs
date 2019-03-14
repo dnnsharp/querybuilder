@@ -8,9 +8,22 @@ namespace SqlKata
 {
     public static class Helper
     {
+
+        private static readonly Type[] NumberTypes =
+        {
+            typeof(int),
+            typeof(long),
+            typeof(decimal),
+            typeof(double),
+            typeof(float),
+            typeof(short),
+            typeof(ushort),
+            typeof(ulong),
+        };
+
         public static bool IsArray(object value)
         {
-            if(value is string)
+            if (value is string)
             {
                 return false;
             }
@@ -169,5 +182,73 @@ namespace SqlKata
             var escapedRegex = new Regex($@"{Regex.Escape(escapeCharacter)}{Regex.Escape(identifier)}");
             return escapedRegex.Replace(nonEscapedReplace, identifier);
         }
+
+        public static StringValue StringifyValue(object value)
+        {
+            if (value == null)
+            {
+                return "NULL";
+            }
+
+            if (IsArray(value))
+            {
+                return JoinArray(",", value as IEnumerable);
+            }
+
+            if (NumberTypes.Contains(value.GetType()))
+            {
+                return value.ToString();
+            }
+
+            if (value is DateTime date)
+            {
+                if (date.Date == date)
+                {
+                    return new StringValue(date.ToString("yyyy-MM-dd"), true);
+                }
+
+                return new StringValue(date.ToString("yyyy-MM-dd HH:mm:ss"), true);
+            }
+
+            if (value is bool vBool)
+            {
+                return vBool ? "true" : "false";
+            }
+
+            if (value is Enum vEnum)
+            {
+                return Convert.ToInt32(vEnum).ToString();
+            }
+
+            // fallback to string
+            return new StringValue(value.ToString(), true);
+        }
+    }
+
+    public struct StringValue
+    {
+
+        public string Value { get; }
+
+        public bool ShouldBeQuoted { get; }
+
+        public StringValue(string value, bool shouldBeQuoted = false)
+        {
+            Value = value;
+            ShouldBeQuoted = shouldBeQuoted;
+        }
+
+        public static implicit operator StringValue(string value)
+        {
+            return new StringValue(value);
+        }
+
+        public static implicit operator string(StringValue value)
+        {
+            return value.ShouldBeQuoted
+                ? $"'{value.Value}'"
+                : value.Value;
+        }
+
     }
 }
