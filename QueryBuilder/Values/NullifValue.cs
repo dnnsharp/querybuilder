@@ -3,11 +3,11 @@
 
         public object Expression => Arguments[0];
 
-        public object Condition => Arguments[1];
+        public object Comparator => Arguments[1];
 
-        public NullifValue(object expression, object condition) {
+        public NullifValue(object expression, object comparand) {
             Arguments.Add(expression);
-            Arguments.Add(condition);
+            Arguments.Add(comparand);
         }
 
     }

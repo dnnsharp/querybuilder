@@ -883,7 +883,7 @@ namespace SqlKata.Compilers
                 if (parameter is NullifValue) {
                     var nullifValue = parameter as NullifValue;
                     ctx.Bindings.Add(nullifValue.Expression);
-                    ctx.Bindings.Add(nullifValue.Condition);
+                    ctx.Bindings.Add(nullifValue.Comparator);
                     return "NULLIF(?, ?)";
                 }
             }
