@@ -785,7 +785,7 @@ namespace SqlKata.Compilers
                 {
                     var nullifValue = value as NullifValue;
                     ctx.Bindings.Add(nullifValue.Expression);
-                    ctx.Bindings.Add(nullifValue.Condition);
+                    ctx.Bindings.Add(nullifValue.Comparator);
                     return "NULLIF(?, ?)";
                 }
             }
