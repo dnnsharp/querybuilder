@@ -1,3 +1,4 @@
+using SqlKata.Values;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -275,10 +276,9 @@ namespace SqlKata.Compilers
 
             for (var i = 0; i < toUpdate.Columns.Count; i++)
             {
-                parts.Add($"{Wrap(toUpdate.Columns[i])} = ?");
+                var value = toUpdate.Values[i];
+                parts.Add($"{Wrap(toUpdate.Columns[i])} = {Parameter(ctx, value)}");
             }
-
-            ctx.Bindings.AddRange(toUpdate.Values);
 
             var where = CompileWheres(ctx);
 
@@ -777,8 +777,18 @@ namespace SqlKata.Compilers
             return opening + value.Replace(closing, closing + closing) + closing;
         }
 
-        public virtual string Parameter<T>(SqlResult ctx, T value)
+        public virtual string Parameter<T>(SqlResult ctx, T value) 
         {
+            if (value is AbstractFunctionValue)
+            {
+                if (value is NullifValue)
+                {
+                    var nullifValue = value as NullifValue;
+                    ctx.Bindings.Add(nullifValue.Expression);
+                    ctx.Bindings.Add(nullifValue.Condition);
+                    return "NULLIF(?, ?)";
+                }
+            }
             ctx.Bindings.Add(value);
             return "?";
         }
