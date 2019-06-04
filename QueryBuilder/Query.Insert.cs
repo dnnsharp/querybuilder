@@ -16,6 +16,11 @@ namespace SqlKata
 
         public Query AsInsert(IEnumerable<string> columns, IEnumerable<object> values)
         {
+            return AsInsert(columns, values, false);
+        }
+
+        public Query AsInsert(IEnumerable<string> columns, IEnumerable<object> values, bool returnId)
+        {
             var columnsList = columns?.ToList();
             var valuesList = values?.ToList();
 
@@ -34,7 +39,8 @@ namespace SqlKata
             ClearComponent("insert").AddComponent("insert", new InsertClause
             {
                 Columns = columnsList,
-                Values = valuesList
+                Values = valuesList,
+                ReturnId = returnId
             });
 
             return this;
