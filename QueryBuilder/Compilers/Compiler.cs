@@ -16,6 +16,8 @@ namespace SqlKata.Compilers
         protected virtual string ColumnAsKeyword { get; set; } = "AS ";
         protected virtual string TableAsKeyword { get; set; } = "AS ";
         protected virtual string LastId { get; set; } = "";
+        protected virtual string Quote { get; set; } = "'";
+        protected virtual string QuoteStart { get; set; } = "'";
 
         protected Compiler()
         {
@@ -826,5 +828,25 @@ namespace SqlKata.Compilers
                 .Replace("]", this.ClosingIdentifier);
         }
 
+        /// <summary>
+        /// Returns the compiler specific string representation of the <paramref name="result"/> with inlined, quote escaped, parameters.
+        /// </summary>
+        /// <param name="result">The <see cref="SqlResult"/> to process.</param>
+        /// <returns></returns>
+        public virtual string InlineResult(SqlResult result)
+        {
+            return Helper.ReplaceAll(result.RawSql, "?", i => {
+                var value = Helper.StringifyValue(result.Bindings[i]);
+
+                return value.ShouldBeQuoted
+                    ? QuoteStart + EscapeStringLiteral(value.Value) + Quote
+                    : value.Value;
+            });
+        }
+
+        protected virtual string EscapeStringLiteral(string value)
+        {
+            return value.Replace(Quote, Quote + Quote);
+        }
     }
 }
