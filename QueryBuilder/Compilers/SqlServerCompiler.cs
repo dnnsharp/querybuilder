@@ -9,6 +9,12 @@ namespace SqlKata.Compilers
             LastId = "SELECT scope_identity() as Id";
         }
 
+        public SqlServerCompiler(bool nationalStringPrefix) : this()
+        {
+            if(nationalStringPrefix)
+                QuoteStart = "N'";
+        }
+
         public override string EngineCode { get; } = EngineCodes.SqlServer;
         public bool UseLegacyPagination { get; set; } = true;
 

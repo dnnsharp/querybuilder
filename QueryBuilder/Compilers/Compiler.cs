@@ -1,3 +1,4 @@
+using SqlKata.Values;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace SqlKata.Compilers
         protected virtual string TableAsKeyword { get; set; } = "AS ";
         protected virtual string LastId { get; set; } = "";
         protected virtual string EscapeCharacter { get; set; } = "\\";
+        protected virtual string Quote { get; set; } = "'";
+        protected virtual string QuoteStart { get; set; } = "'";
 
         protected Compiler()
         {
@@ -878,6 +881,15 @@ namespace SqlKata.Compilers
                 return literal.Value;
             }
 
+            if (parameter is AbstractFunctionValue) {
+                if (parameter is NullifValue) {
+                    var nullifValue = parameter as NullifValue;
+                    ctx.Bindings.Add(nullifValue.Expression);
+                    ctx.Bindings.Add(nullifValue.Comparator);
+                    return "NULLIF(?, ?)";
+                }
+            }
+
             // if we face a variable we have to lookup the variable from the predefined variables
             if (parameter is Variable variable)
             {
@@ -921,6 +933,26 @@ namespace SqlKata.Compilers
 
                 .ReplaceIdentifierUnlessEscaped(this.EscapeCharacter, "[", this.OpeningIdentifier)
                 .ReplaceIdentifierUnlessEscaped(this.EscapeCharacter, "]", this.ClosingIdentifier);
+        }
+        /// <summary>
+        /// Returns the compiler specific string representation of the <paramref name="result"/> with inlined, quote escaped, parameters.
+        /// </summary>
+        /// <param name="result">The <see cref="SqlResult"/> to process.</param>
+        /// <returns></returns>
+        public virtual string InlineResult(SqlResult result)
+        {
+            return Helper.ReplaceAll(result.RawSql, "?", i => {
+                var value = Helper.StringifyValue(result.Bindings[i]);
+
+                return value.ShouldBeQuoted
+                    ? QuoteStart + EscapeStringLiteral(value.Value) + Quote
+                    : value.Value;
+            });
+        }
+
+        protected virtual string EscapeStringLiteral(string value)
+        {
+            return value.Replace(Quote, Quote + Quote);
         }
     }
 }

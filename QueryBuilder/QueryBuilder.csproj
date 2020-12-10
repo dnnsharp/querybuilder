@@ -10,5 +10,6 @@
     <TargetFrameworks>netstandard1.0;net45</TargetFrameworks>
     <RootNamespace>SqlKata</RootNamespace>
     <AssemblyName>SqlKata</AssemblyName>
+    <Version>2.2.0.1</Version>
   </PropertyGroup>
 </Project>
